@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#090b10" />
+  <meta name="theme-color" content="#090c10" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="XMAX GUARD" />
   <title>XMAX GUARD</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
     :root {
-      --bg-black: #090b10;
-      --bg-anthracite: #141821;
-      --bg-dark-gray: #1e2430;
-      --border-gray: #2b3344;
-      --text-main: #f3f6fa;
-      --text-muted: #9aa5b8;
+      --bg-black: #080b0f;
+      --bg-anthracite: #131820;
+      --bg-dark-gray: #1c232e;
+      --border-gray: #2a3444;
+      --text-main: #f4f7fb;
+      --text-muted: #9aa7ba;
       --accent-blue: #2563eb;
       --accent-blue-glow: rgba(37, 99, 235, 0.32);
+      --accent-gold: #c89d54;
+      --accent-petrol: #1e3a4c;
       --status-safe: #10b981;
       --status-night: #38bdf8;
       --status-alert: #ef4444;
@@ -37,7 +40,7 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 20px 16px 44px;
+      padding: 18px 14px 44px;
     }
 
     .app-container {
@@ -45,14 +48,14 @@
       max-width: 430px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 15px;
     }
 
     .header {
-      background: linear-gradient(145deg, var(--bg-anthracite), var(--bg-black));
+      background: linear-gradient(145deg, rgba(30, 58, 76, 0.45), var(--bg-anthracite) 55%, var(--bg-black));
       border: 1px solid var(--border-gray);
       border-radius: 22px;
-      padding: 18px 20px;
+      padding: 16px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -68,9 +71,9 @@
       width: 46px;
       height: 46px;
       border-radius: 14px;
-      background: linear-gradient(135deg, #1d4ed8, #0f172a);
-      border: 1px solid rgba(59, 130, 246, 0.45);
-      box-shadow: 0 0 20px var(--accent-blue-glow);
+      background: linear-gradient(135deg, var(--accent-petrol), #0d131a);
+      border: 1px solid rgba(200, 157, 84, 0.45);
+      box-shadow: 0 0 18px rgba(37, 99, 235, 0.25);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -84,7 +87,8 @@
 
     .brand-subtitle {
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--accent-gold);
+      font-weight: 600;
       margin-top: 2px;
     }
 
@@ -100,26 +104,87 @@
     }
 
     .mode-pill.active {
-      background-color: rgba(37, 99, 235, 0.2);
+      background-color: rgba(37, 99, 235, 0.22);
       color: #60a5fa;
-      border-color: rgba(59, 130, 246, 0.6);
-      box-shadow: 0 0 14px var(--accent-blue-glow);
+      border-color: rgba(59, 130, 246, 0.65);
     }
 
     .mode-pill.alert {
-      background-color: rgba(239, 68, 68, 0.2);
+      background-color: rgba(239, 68, 68, 0.22);
       color: #f87171;
       border-color: rgba(239, 68, 68, 0.65);
     }
 
-    .card {
-      background: var(--bg-anthracite);
-      border: 1px solid var(--border-gray);
+    /* Motor Görseli Banner Kartı */
+    .bike-showcase {
+      position: relative;
       border-radius: 24px;
-      padding: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border-gray);
+      background: var(--bg-anthracite);
+      height: 215px;
+    }
+
+    .bike-showcase img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .bike-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8, 11, 15, 0.94) 0%, rgba(8, 11, 15, 0.35) 55%, rgba(8, 11, 15, 0.15) 100%);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      justify-content: flex-end;
+      padding: 16px;
+      gap: 8px;
+    }
+
+    .bike-overlay-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .bike-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      color: var(--accent-gold);
+      background: rgba(8, 11, 15, 0.72);
+      border: 1px solid rgba(200, 157, 84, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .photo-upload-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      background: rgba(28, 35, 46, 0.88);
+      border: 1px solid var(--border-gray);
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .bike-caption {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(25, 32, 43, 0.96), var(--bg-anthracite));
+      border: 1px solid var(--border-gray);
+      border-radius: 24px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
       transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
@@ -177,16 +242,11 @@
       background-color: var(--text-muted);
     }
 
-    .live-badge.armed .live-dot {
-      background-color: var(--status-safe);
-    }
-
-    .live-badge.alert .live-dot {
-      background-color: var(--status-alert);
-    }
+    .live-badge.armed .live-dot { background-color: var(--status-safe); }
+    .live-badge.alert .live-dot { background-color: var(--status-alert); }
 
     .status-main {
-      font-size: 23px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -207,13 +267,13 @@
       background-color: var(--bg-dark-gray);
       border: 1px solid var(--border-gray);
       border-radius: 16px;
-      padding: 14px;
+      padding: 13px;
     }
 
     .info-box-title {
       font-size: 11px;
       color: var(--text-muted);
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .info-box-value {
@@ -224,6 +284,7 @@
 
     .info-box-value.blue { color: #60a5fa; }
     .info-box-value.night { color: var(--status-night); }
+    .info-box-value.gold { color: var(--accent-gold); }
     .info-box-value.alert { color: #f87171; }
 
     .control-title {
@@ -240,7 +301,7 @@
       width: 100%;
       border: none;
       border-radius: 16px;
-      padding: 15px 18px;
+      padding: 14px 16px;
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
@@ -332,11 +393,20 @@
       min-height: 16px;
     }
 
+    #guardMap {
+      width: 100%;
+      height: 220px;
+      border-radius: 16px;
+      border: 1px solid var(--border-gray);
+      overflow: hidden;
+      z-index: 1;
+    }
+
     .notif-list {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 190px;
+      max-height: 185px;
       overflow-y: auto;
     }
 
@@ -356,7 +426,7 @@
       align-items: center;
       font-size: 12px;
       font-weight: 700;
-      color: #60a5fa;
+      color: var(--accent-gold);
     }
 
     .notif-time {
@@ -371,7 +441,7 @@
     }
 
     .disclaimer-box {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(10, 14, 20, 0.78);
       border: 1px dashed var(--border-gray);
       border-radius: 14px;
       padding: 12px;
@@ -386,17 +456,35 @@
     <header class="header">
       <div class="brand">
         <div class="logo-badge" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c89d54" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
         </div>
         <div>
           <div class="brand-title">XMAX GUARD</div>
-          <div class="brand-subtitle">Yamaha XMAX 250</div>
+          <div class="brand-subtitle">YAMAHA XMAX 250 • BRONZ & ANTRASİT</div>
         </div>
       </div>
       <div id="headerModeBadge" class="mode-pill">PASİF</div>
     </header>
+
+    <!-- Motosiklet Görsel Vitrin Kartı -->
+    <section class="bike-showcase">
+      <img
+        id="bikePhotoImg"
+        src="xmax-hero.jpg"
+        alt="Yamaha XMAX 250"
+        onerror="this.src='https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=900&q=80';"
+      />
+      <div class="bike-overlay">
+        <div class="bike-overlay-top">
+          <span class="bike-tag">XMAX 250 • GÜVENLİK PANELİ</span>
+          <label for="bikePhotoInput" class="photo-upload-label">Fotoğraf Değiştir</label>
+          <input id="bikePhotoInput" type="file" accept="image/*" style="display:none;" />
+        </div>
+        <div class="bike-caption">GitHub'a <b>xmax-hero.jpg</b> eklersen otomatik görünür; istersen buradan da seçebilirsin.</div>
+      </div>
+    </section>
 
     <section id="statusCard" class="card">
       <div class="status-top">
@@ -457,47 +545,41 @@
       <div id="scheduleFeedback" class="feedback-text"></div>
     </section>
 
+    <!-- Harita & Konum Paneli -->
     <section class="card">
       <div class="control-header">
-        <span class="control-title">GPS & Hareket Sensörü (5 m)</span>
-        <span id="telemetryStatusBadge" class="muted-note">Donanım: Beklemede</span>
+        <span class="control-title">Konum Haritası & AirTag Kısayolu</span>
+        <span id="mapCoordLabel" class="muted-note">İstanbul</span>
       </div>
 
+      <div id="guardMap"></div>
+
       <div class="info-grid">
+        <div class="info-box">
+          <div class="info-box-title">HARİTA İŞARETÇİSİ</div>
+          <div id="pinModeText" class="info-box-value gold">Park Konumu</div>
+        </div>
         <div class="info-box">
           <div class="info-box-title">YER DEĞİŞTİRME</div>
           <div id="movedDistanceText" class="info-box-value">0.0 m</div>
         </div>
-        <div class="info-box">
-          <div class="info-box-title">SON KONUM (GPS)</div>
-          <div id="gpsCoordsText" class="info-box-value">Bekleniyor</div>
-        </div>
       </div>
 
+      <button id="locatePhoneBtn" class="btn-secondary" type="button">
+        Cihaz Konumunu Haritada İşaretle
+      </button>
       <button id="simulateMoveBtn" class="btn-alert" type="button">
         5 m Hareket Uyarısı Test Et
       </button>
       <button id="resetMoveAlertBtn" class="btn-secondary" type="button">
         Hareket Uyarısını Sıfırla
       </button>
-
-      <div class="disclaimer-box">
-        Gelecek Donanım Planı: ESP32 + GPS (NEO-6M) + İvmeölçer (MPU-6050) modülleri eklendiğinde sunucudan gelen konum ve ~5 m yer değiştirme verisi bu alanı otomatik günceller.
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="control-header">
-        <span class="control-title">Apple Bul Kısayolu</span>
-        <span class="muted-note">iPhone 16</span>
-      </div>
-
       <a id="openFindMyBtn" class="btn-findmy" href="findmy://">
-        Apple Bul Uygulamasını Aç
+        Apple Bul (AirTag) Uygulamasını Aç
       </a>
 
       <div class="disclaimer-box">
-        Not: Bu buton iPhone'daki Apple Bul (Find My) uygulamasını açmaya yönlendirir. Apple güvenlik kısıtlamaları nedeniyle AirTag konumuna bu uygulama içinden doğrudan veri çekilmez.
+        AirTag Bilgilendirmesi: Apple AirTag konumuna üçüncü taraf uygulamadan doğrudan erişilemez. Harita, cihaz/test koordinatlarını gösterir; AirTag takibi için "Apple Bul Uygulamasını Aç" butonunu kullan.
       </div>
     </section>
 
@@ -523,6 +605,7 @@
     </section>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
     const KEYS = {
       manualArmed: "xmax_guard_manual_armed",
@@ -534,8 +617,14 @@
       notifLogs: "xmax_guard_notif_logs",
       motionAlert: "xmax_guard_motion_alert",
       movedMeters: "xmax_guard_moved_meters",
-      gpsCoords: "xmax_guard_gps_coords"
+      mapLat: "xmax_guard_map_lat",
+      mapLng: "xmax_guard_map_lng",
+      pinMode: "xmax_guard_pin_mode",
+      customPhoto: "xmax_guard_custom_photo"
     };
+
+    const bikePhotoImg = document.getElementById("bikePhotoImg");
+    const bikePhotoInput = document.getElementById("bikePhotoInput");
 
     const headerModeBadge = document.getElementById("headerModeBadge");
     const statusCard = document.getElementById("statusCard");
@@ -555,9 +644,10 @@
     const saveScheduleBtn = document.getElementById("saveScheduleBtn");
     const scheduleFeedback = document.getElementById("scheduleFeedback");
 
-    const telemetryStatusBadge = document.getElementById("telemetryStatusBadge");
+    const mapCoordLabel = document.getElementById("mapCoordLabel");
+    const pinModeText = document.getElementById("pinModeText");
     const movedDistanceText = document.getElementById("movedDistanceText");
-    const gpsCoordsText = document.getElementById("gpsCoordsText");
+    const locatePhoneBtn = document.getElementById("locatePhoneBtn");
     const simulateMoveBtn = document.getElementById("simulateMoveBtn");
     const resetMoveAlertBtn = document.getElementById("resetMoveAlertBtn");
 
@@ -574,10 +664,43 @@
     let notifLogs = JSON.parse(localStorage.getItem(KEYS.notifLogs) || "[]");
     let motionAlert = localStorage.getItem(KEYS.motionAlert) === "true";
     let movedMeters = Number(localStorage.getItem(KEYS.movedMeters) || "0");
-    let gpsCoords = localStorage.getItem(KEYS.gpsCoords) || "Bekleniyor";
+    let mapLat = Number(localStorage.getItem(KEYS.mapLat) || "41.0082");
+    let mapLng = Number(localStorage.getItem(KEYS.mapLng) || "28.9784");
+    let pinMode = localStorage.getItem(KEYS.pinMode) || "Park Konumu";
+
+    const savedCustomPhoto = localStorage.getItem(KEYS.customPhoto);
+    if (savedCustomPhoto) {
+      bikePhotoImg.src = savedCustomPhoto;
+    }
 
     startTimeInput.value = startTime;
     endTimeInput.value = endTime;
+
+    // Harita kurulumu (Leaflet + OpenStreetMap)
+    const map = L.map("guardMap", { zoomControl: true }).setView([mapLat, mapLng], 15);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    const bikeMarker = L.marker([mapLat, mapLng]).addTo(map).bindPopup("Yamaha XMAX 250");
+    const perimeterCircle = L.circle([mapLat, mapLng], {
+      radius: 5,
+      color: "#c89d54",
+      fillColor: "#c89d54",
+      fillOpacity: 0.22
+    }).addTo(map);
+
+    function updateMap(lat, lng, labelText) {
+      mapLat = lat;
+      mapLng = lng;
+      localStorage.setItem(KEYS.mapLat, String(mapLat));
+      localStorage.setItem(KEYS.mapLng, String(mapLng));
+      bikeMarker.setLatLng([mapLat, mapLng]).bindPopup(labelText).openPopup();
+      perimeterCircle.setLatLng([mapLat, mapLng]);
+      map.setView([mapLat, mapLng], 16);
+      mapCoordLabel.textContent = `${mapLat.toFixed(4)}, ${mapLng.toFixed(4)}`;
+    }
 
     function formatNow() {
       const now = new Date();
@@ -633,7 +756,7 @@
               <span>SİSTEM</span>
               <span class="notif-time">${formatNow()}</span>
             </div>
-            <div class="notif-msg">Henüz bildirim kaydı yok. Güvenlik veya gece modu değiştiğinde burada görünür.</div>
+            <div class="notif-msg">Bildirim altyapısı hazır. Durum değişiklikleri burada listelenir.</div>
           </div>
         `;
         return;
@@ -661,7 +784,7 @@
         try {
           new Notification(title, { body: message });
         } catch (err) {
-          // Log kaydi korunur.
+          // Kayıt korunur.
         }
       }
     }
@@ -702,7 +825,7 @@
         liveBadge.classList.add("alert");
         liveBadgeText.textContent = "HAREKET ALGILANDI";
         securityStatusText.textContent = `Motosiklet ~${movedMeters.toFixed(1)} m Hareket Etti!`;
-        securityStatusDesc.textContent = "Sensör/GPS verisine göre Yamaha XMAX 250 güvenlik sınırında yer değişikliği tespit edildi.";
+        securityStatusDesc.textContent = "Harita/sensör verisine göre Yamaha XMAX 250 güvenlik sınırında yer değişikliği tespit edildi.";
       } else if (effectiveArmed) {
         headerModeBadge.textContent = "AKTİF";
         headerModeBadge.classList.add("active");
@@ -732,11 +855,27 @@
 
       movedDistanceText.textContent = `${movedMeters.toFixed(1)} m`;
       movedDistanceText.classList.toggle("alert", motionAlert);
-      gpsCoordsText.textContent = gpsCoords;
-      telemetryStatusBadge.textContent = motionAlert ? "Donanım: UYARI" : "Donanım: Beklemede";
+      pinModeText.textContent = pinMode;
+      pinModeText.classList.toggle("alert", motionAlert);
+      mapCoordLabel.textContent = `${mapLat.toFixed(4)}, ${mapLng.toFixed(4)}`;
 
       updatePermissionBadge();
     }
+
+    bikePhotoInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        bikePhotoImg.src = reader.result;
+        try {
+          localStorage.setItem(KEYS.customPhoto, reader.result);
+        } catch (err) {
+          // Çok büyük görsellerde depolama sınırı aşılırsa sadece oturum içinde gösterilir.
+        }
+      };
+      reader.readAsDataURL(file);
+    });
 
     toggleGuardBtn.addEventListener("click", () => {
       manualArmed = !manualArmed;
@@ -787,28 +926,52 @@
       renderUI();
     });
 
+    locatePhoneBtn.addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        sendGuardNotification("XMAX GUARD • Konum", "Cihaz konum servisi desteklenmiyor.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          pinMode = "Cihaz Konumu";
+          lastAction = formatNow();
+          localStorage.setItem(KEYS.pinMode, pinMode);
+          localStorage.setItem(KEYS.lastAction, lastAction);
+          updateMap(pos.coords.latitude, pos.coords.longitude, "İşaretlenen Konum");
+          renderUI();
+          sendGuardNotification("XMAX GUARD • Konum Güncellendi", `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)} haritada işaretlendi.`);
+        },
+        () => {
+          sendGuardNotification("XMAX GUARD • Konum İzni", "Konum alınamadı; tarayıcı konum iznini kontrol et.");
+        }
+      );
+    });
+
     simulateMoveBtn.addEventListener("click", () => {
       motionAlert = true;
       movedMeters = 5.4;
-      gpsCoords = "41.0082, 28.9784 (Test)";
+      pinMode = "Hareket Uyarısı";
       lastAction = formatNow();
 
       localStorage.setItem(KEYS.motionAlert, "true");
       localStorage.setItem(KEYS.movedMeters, String(movedMeters));
-      localStorage.setItem(KEYS.gpsCoords, gpsCoords);
+      localStorage.setItem(KEYS.pinMode, pinMode);
       localStorage.setItem(KEYS.lastAction, lastAction);
 
+      updateMap(mapLat + 0.00005, mapLng + 0.00005, "Hareket Tespit Edildi (~5.4 m)");
       renderUI();
-      sendGuardNotification("XMAX GUARD • HAREKET UYARISI", "Motosiklet yaklaşık 5.4 metre hareket etti! Son konum: 41.0082, 28.9784.");
+      sendGuardNotification("XMAX GUARD • HAREKET UYARISI", "Motosiklet yaklaşık 5.4 metre hareket etti! Harita güncellendi.");
     });
 
     resetMoveAlertBtn.addEventListener("click", () => {
       motionAlert = false;
       movedMeters = 0;
+      pinMode = "Park Konumu";
       lastAction = formatNow();
 
       localStorage.setItem(KEYS.motionAlert, "false");
       localStorage.setItem(KEYS.movedMeters, "0");
+      localStorage.setItem(KEYS.pinMode, pinMode);
       localStorage.setItem(KEYS.lastAction, lastAction);
 
       renderUI();
