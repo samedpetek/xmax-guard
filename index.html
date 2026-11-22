@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="XMAX GUARD" />
+  <link rel="apple-touch-icon" href="app-icon.png" />
   <title>XMAX GUARD</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
@@ -17,13 +18,13 @@
       --border-gray: #2a3444;
       --text-main: #f4f7fb;
       --text-muted: #9aa7ba;
-      --accent-blue: #2563eb;
-      --accent-blue-glow: rgba(37, 99, 235, 0.32);
+      --accent-blue: #007aff; /* Apple Blue */
+      --accent-blue-glow: rgba(0, 122, 255, 0.28);
       --accent-gold: #c89d54;
       --accent-petrol: #1e3a4c;
-      --status-safe: #10b981;
-      --status-night: #38bdf8;
-      --status-alert: #ef4444;
+      --status-safe: #34c759; /* Apple Green */
+      --status-night: #5ac8fa;
+      --status-alert: #ff3b30; /* Apple Red */
     }
 
     * {
@@ -68,15 +69,12 @@
     }
 
     .logo-badge {
-      width: 46px;
-      height: 46px;
+      width: 48px;
+      height: 48px;
       border-radius: 14px;
-      background: linear-gradient(135deg, var(--accent-petrol), #0d131a);
+      background: url('app-icon.png') no-repeat center center / cover, linear-gradient(135deg, var(--accent-petrol), #0d131a);
       border: 1px solid rgba(200, 157, 84, 0.45);
-      box-shadow: 0 0 18px rgba(37, 99, 235, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      box-shadow: 0 0 15px rgba(200, 157, 84, 0.2);
     }
 
     .brand-title {
@@ -104,15 +102,15 @@
     }
 
     .mode-pill.active {
-      background-color: rgba(37, 99, 235, 0.22);
+      background-color: rgba(0, 122, 255, 0.22);
       color: #60a5fa;
-      border-color: rgba(59, 130, 246, 0.65);
+      border-color: rgba(0, 122, 255, 0.65);
     }
 
     .mode-pill.alert {
-      background-color: rgba(239, 68, 68, 0.22);
-      color: #f87171;
-      border-color: rgba(239, 68, 68, 0.65);
+      background-color: rgba(255, 59, 48, 0.22);
+      color: #ff8780;
+      border-color: rgba(255, 59, 48, 0.65);
     }
 
     /* Motor Görseli Banner Kartı */
@@ -189,13 +187,13 @@
     }
 
     .card.armed {
-      border-color: rgba(37, 99, 235, 0.65);
-      box-shadow: 0 8px 28px rgba(37, 99, 235, 0.14);
+      border-color: rgba(0, 122, 255, 0.65);
+      box-shadow: 0 8px 28px rgba(0, 122, 255, 0.14);
     }
 
     .card.alert {
-      border-color: rgba(239, 68, 68, 0.75);
-      box-shadow: 0 8px 28px rgba(239, 68, 68, 0.18);
+      border-color: rgba(255, 59, 48, 0.75);
+      box-shadow: 0 8px 28px rgba(255, 59, 48, 0.18);
     }
 
     .status-top, .control-header {
@@ -227,12 +225,12 @@
 
     .live-badge.armed {
       color: var(--status-safe);
-      background: rgba(16, 185, 129, 0.14);
+      background: rgba(52, 199, 89, 0.14);
     }
 
     .live-badge.alert {
-      color: #f87171;
-      background: rgba(239, 68, 68, 0.16);
+      color: #ff8780;
+      background: rgba(255, 59, 48, 0.16);
     }
 
     .live-dot {
@@ -282,10 +280,10 @@
       color: var(--text-main);
     }
 
-    .info-box-value.blue { color: #60a5fa; }
+    .info-box-value.blue { color: var(--accent-blue); }
     .info-box-value.night { color: var(--status-night); }
     .info-box-value.gold { color: var(--accent-gold); }
-    .info-box-value.alert { color: #f87171; }
+    .info-box-value.alert { color: var(--status-alert); }
 
     .control-title {
       font-size: 15px;
@@ -318,15 +316,15 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+      background: linear-gradient(135deg, var(--accent-blue), #0056b3);
       color: #ffffff;
       box-shadow: 0 6px 20px var(--accent-blue-glow);
     }
 
     .btn-primary.armed {
       background: var(--bg-dark-gray);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #ff453a;
+      border: 1px solid rgba(255, 59, 48, 0.45);
       box-shadow: none;
     }
 
@@ -337,21 +335,21 @@
     }
 
     .btn-secondary.night-active {
-      background: rgba(56, 189, 248, 0.14);
+      background: rgba(90, 200, 250, 0.14);
       color: var(--status-night);
-      border-color: rgba(56, 189, 248, 0.45);
+      border-color: rgba(90, 200, 250, 0.45);
     }
 
     .btn-findmy {
-      background: #172554;
+      background: #002e6e;
       color: #93c5fd;
-      border: 1px solid rgba(59, 130, 246, 0.45);
+      border: 1px solid rgba(0, 122, 255, 0.45);
     }
 
     .btn-alert {
-      background: rgba(239, 68, 68, 0.15);
-      color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.5);
+      background: rgba(255, 59, 48, 0.15);
+      color: #ff9f0a;
+      border: 1px solid rgba(255, 59, 48, 0.5);
     }
 
     .time-grid {
@@ -395,11 +393,42 @@
 
     #guardMap {
       width: 100%;
-      height: 220px;
-      border-radius: 16px;
+      height: 240px;
+      border-radius: 20px;
       border: 1px solid var(--border-gray);
       overflow: hidden;
       z-index: 1;
+    }
+
+    /* Apple Map Tasarım Override */
+    .leaflet-tile {
+      filter: grayscale(20%) brightness(105%) contrast(95%) sepia(5%);
+    }
+
+    /* Apple-style Özel Marker */
+    .apple-pulse-marker {
+      background: rgba(0, 122, 255, 0.18);
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 14px rgba(0, 122, 255, 0.6), inset 0 0 8px rgba(0, 122, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s infinite;
+    }
+
+    .apple-pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: var(--accent-blue);
+      border-radius: 50%;
+      border: 1.5px solid #ffffff;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.6); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(0, 122, 255, 0); }
+      100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
     }
 
     .notif-list {
@@ -455,20 +484,16 @@
   <main class="app-container">
     <header class="header">
       <div class="brand">
-        <div class="logo-badge" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c89d54" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-        </div>
+        <div class="logo-badge" aria-hidden="true" id="appLogo"></div>
         <div>
           <div class="brand-title">XMAX GUARD</div>
-          <div class="brand-subtitle">YAMAHA XMAX 250 • BRONZ & ANTRASİT</div>
+          <div class="brand-subtitle">YAMAHA XMAX 250 • MAT ANTRASİT & BRONZ</div>
         </div>
       </div>
       <div id="headerModeBadge" class="mode-pill">PASİF</div>
     </header>
 
-    <!-- Motosiklet Görsel Vitrin Kartı -->
+    <!-- Motor Görsel Vitrin Kartı -->
     <section class="bike-showcase">
       <img
         id="bikePhotoImg"
@@ -548,7 +573,7 @@
     <!-- Harita & Konum Paneli -->
     <section class="card">
       <div class="control-header">
-        <span class="control-title">Konum Haritası & AirTag Kısayolu</span>
+        <span class="control-title">Konum Haritası (Apple Harita Stili)</span>
         <span id="mapCoordLabel" class="muted-note">İstanbul</span>
       </div>
 
@@ -676,27 +701,44 @@
     startTimeInput.value = startTime;
     endTimeInput.value = endTime;
 
-    // Harita kurulumu (Leaflet + OpenStreetMap)
-    const map = L.map("guardMap", { zoomControl: true }).setView([mapLat, mapLng], 15);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap"
+    // Apple Haritaları Tarzında Leaflet Kurulumu (Pastel Tonlu Light Tile)
+    const map = L.map("guardMap", {
+      zoomControl: false,
+      attributionControl: false
+    }).setView([mapLat, mapLng], 15);
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png", {
+      maxZoom: 20
     }).addTo(map);
 
-    const bikeMarker = L.marker([mapLat, mapLng]).addTo(map).bindPopup("Yamaha XMAX 250");
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png", {
+      maxZoom: 20
+    }).addTo(map);
+
+    // Apple Style Pulse Marker
+    const appleIcon = L.divIcon({
+      className: "apple-pulse-marker",
+      html: '<div class="apple-pulse-dot"></div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+
+    const bikeMarker = L.marker([mapLat, mapLng], { icon: appleIcon }).addTo(map);
+
     const perimeterCircle = L.circle([mapLat, mapLng], {
       radius: 5,
-      color: "#c89d54",
-      fillColor: "#c89d54",
-      fillOpacity: 0.22
+      color: "#007aff",
+      fillColor: "#007aff",
+      fillOpacity: 0.12,
+      weight: 1
     }).addTo(map);
 
-    function updateMap(lat, lng, labelText) {
+    function updateMap(lat, lng) {
       mapLat = lat;
       mapLng = lng;
       localStorage.setItem(KEYS.mapLat, String(mapLat));
       localStorage.setItem(KEYS.mapLng, String(mapLng));
-      bikeMarker.setLatLng([mapLat, mapLng]).bindPopup(labelText).openPopup();
+      bikeMarker.setLatLng([mapLat, mapLng]);
       perimeterCircle.setLatLng([mapLat, mapLng]);
       map.setView([mapLat, mapLng], 16);
       mapCoordLabel.textContent = `${mapLat.toFixed(4)}, ${mapLng.toFixed(4)}`;
@@ -784,7 +826,7 @@
         try {
           new Notification(title, { body: message });
         } catch (err) {
-          // Kayıt korunur.
+          // Kayit korunur.
         }
       }
     }
@@ -937,7 +979,7 @@
           lastAction = formatNow();
           localStorage.setItem(KEYS.pinMode, pinMode);
           localStorage.setItem(KEYS.lastAction, lastAction);
-          updateMap(pos.coords.latitude, pos.coords.longitude, "İşaretlenen Konum");
+          updateMap(pos.coords.latitude, pos.coords.longitude);
           renderUI();
           sendGuardNotification("XMAX GUARD • Konum Güncellendi", `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)} haritada işaretlendi.`);
         },
@@ -958,7 +1000,7 @@
       localStorage.setItem(KEYS.pinMode, pinMode);
       localStorage.setItem(KEYS.lastAction, lastAction);
 
-      updateMap(mapLat + 0.00005, mapLng + 0.00005, "Hareket Tespit Edildi (~5.4 m)");
+      updateMap(mapLat + 0.00005, mapLng + 0.00005);
       renderUI();
       sendGuardNotification("XMAX GUARD • HAREKET UYARISI", "Motosiklet yaklaşık 5.4 metre hareket etti! Harita güncellendi.");
     });
