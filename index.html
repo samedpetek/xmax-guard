@@ -18,13 +18,13 @@
       --border-gray: #2a3444;
       --text-main: #f4f7fb;
       --text-muted: #9aa7ba;
-      --accent-blue: #007aff; /* Apple Blue */
+      --accent-blue: #007aff;
       --accent-blue-glow: rgba(0, 122, 255, 0.28);
       --accent-gold: #c89d54;
       --accent-petrol: #1e3a4c;
-      --status-safe: #34c759; /* Apple Green */
+      --status-safe: #34c759;
       --status-night: #5ac8fa;
-      --status-alert: #ff3b30; /* Apple Red */
+      --status-alert: #ff3b30;
     }
 
     * {
@@ -113,7 +113,6 @@
       border-color: rgba(255, 59, 48, 0.65);
     }
 
-    /* Motor Görseli Banner Kartı */
     .bike-showcase {
       position: relative;
       border-radius: 24px;
@@ -400,12 +399,10 @@
       z-index: 1;
     }
 
-    /* Apple Map Tasarım Override */
     .leaflet-tile {
-      filter: grayscale(20%) brightness(105%) contrast(95%) sepia(5%);
+      filter: saturate(85%) brightness(102%);
     }
 
-    /* Apple-style Özel Marker */
     .apple-pulse-marker {
       background: rgba(0, 122, 255, 0.18);
       border-radius: 50%;
@@ -493,7 +490,6 @@
       <div id="headerModeBadge" class="mode-pill">PASİF</div>
     </header>
 
-    <!-- Motor Görsel Vitrin Kartı -->
     <section class="bike-showcase">
       <img
         id="bikePhotoImg"
@@ -570,10 +566,9 @@
       <div id="scheduleFeedback" class="feedback-text"></div>
     </section>
 
-    <!-- Harita & Konum Paneli -->
     <section class="card">
       <div class="control-header">
-        <span class="control-title">Konum Haritası (Apple Harita Stili)</span>
+        <span class="control-title">Konum Haritası</span>
         <span id="mapCoordLabel" class="muted-note">İstanbul</span>
       </div>
 
@@ -701,21 +696,15 @@
     startTimeInput.value = startTime;
     endTimeInput.value = endTime;
 
-    // Apple Haritaları Tarzında Leaflet Kurulumu (Pastel Tonlu Light Tile)
     const map = L.map("guardMap", {
       zoomControl: false,
       attributionControl: false
     }).setView([mapLat, mapLng], 15);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png", {
-      maxZoom: 20
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19
     }).addTo(map);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png", {
-      maxZoom: 20
-    }).addTo(map);
-
-    // Apple Style Pulse Marker
     const appleIcon = L.divIcon({
       className: "apple-pulse-marker",
       html: '<div class="apple-pulse-dot"></div>',
@@ -729,8 +718,8 @@
       radius: 5,
       color: "#007aff",
       fillColor: "#007aff",
-      fillOpacity: 0.12,
-      weight: 1
+      fillOpacity: 0.14,
+      weight: 1.5
     }).addTo(map);
 
     function updateMap(lat, lng) {
@@ -826,7 +815,7 @@
         try {
           new Notification(title, { body: message });
         } catch (err) {
-          // Kayit korunur.
+          // Kayıt korunur.
         }
       }
     }
