@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#090b10" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="XMAX GUARD" />
   <title>XMAX GUARD</title>
   <style>
     :root {
@@ -17,6 +20,7 @@
       --accent-blue-glow: rgba(37, 99, 235, 0.32);
       --status-safe: #10b981;
       --status-night: #38bdf8;
+      --status-alert: #ef4444;
     }
 
     * {
@@ -33,7 +37,7 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 20px 16px 40px;
+      padding: 20px 16px 44px;
     }
 
     .app-container {
@@ -102,6 +106,12 @@
       box-shadow: 0 0 14px var(--accent-blue-glow);
     }
 
+    .mode-pill.alert {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.65);
+    }
+
     .card {
       background: var(--bg-anthracite);
       border: 1px solid var(--border-gray);
@@ -116,6 +126,11 @@
     .card.armed {
       border-color: rgba(37, 99, 235, 0.65);
       box-shadow: 0 8px 28px rgba(37, 99, 235, 0.14);
+    }
+
+    .card.alert {
+      border-color: rgba(239, 68, 68, 0.75);
+      box-shadow: 0 8px 28px rgba(239, 68, 68, 0.18);
     }
 
     .status-top, .control-header {
@@ -150,6 +165,11 @@
       background: rgba(16, 185, 129, 0.14);
     }
 
+    .live-badge.alert {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.16);
+    }
+
     .live-dot {
       width: 7px;
       height: 7px;
@@ -159,6 +179,10 @@
 
     .live-badge.armed .live-dot {
       background-color: var(--status-safe);
+    }
+
+    .live-badge.alert .live-dot {
+      background-color: var(--status-alert);
     }
 
     .status-main {
@@ -198,13 +222,9 @@
       color: var(--text-main);
     }
 
-    .info-box-value.blue {
-      color: #60a5fa;
-    }
-
-    .info-box-value.night {
-      color: var(--status-night);
-    }
+    .info-box-value.blue { color: #60a5fa; }
+    .info-box-value.night { color: var(--status-night); }
+    .info-box-value.alert { color: #f87171; }
 
     .control-title {
       font-size: 15px;
@@ -216,7 +236,7 @@
       color: var(--text-muted);
     }
 
-    .btn-primary, .btn-secondary, .btn-findmy {
+    .btn-primary, .btn-secondary, .btn-findmy, .btn-alert {
       width: 100%;
       border: none;
       border-radius: 16px;
@@ -232,7 +252,7 @@
       transition: transform 0.12s ease, opacity 0.2s ease;
     }
 
-    .btn-primary:active, .btn-secondary:active, .btn-findmy:active {
+    .btn-primary:active, .btn-secondary:active, .btn-findmy:active, .btn-alert:active {
       transform: scale(0.98);
     }
 
@@ -265,6 +285,12 @@
       background: #172554;
       color: #93c5fd;
       border: 1px solid rgba(59, 130, 246, 0.45);
+    }
+
+    .btn-alert {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.5);
     }
 
     .time-grid {
@@ -433,6 +459,35 @@
 
     <section class="card">
       <div class="control-header">
+        <span class="control-title">GPS & Hareket Sensörü (5 m)</span>
+        <span id="telemetryStatusBadge" class="muted-note">Donanım: Beklemede</span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-box-title">YER DEĞİŞTİRME</div>
+          <div id="movedDistanceText" class="info-box-value">0.0 m</div>
+        </div>
+        <div class="info-box">
+          <div class="info-box-title">SON KONUM (GPS)</div>
+          <div id="gpsCoordsText" class="info-box-value">Bekleniyor</div>
+        </div>
+      </div>
+
+      <button id="simulateMoveBtn" class="btn-alert" type="button">
+        5 m Hareket Uyarısı Test Et
+      </button>
+      <button id="resetMoveAlertBtn" class="btn-secondary" type="button">
+        Hareket Uyarısını Sıfırla
+      </button>
+
+      <div class="disclaimer-box">
+        Gelecek Donanım Planı: ESP32 + GPS (NEO-6M) + İvmeölçer (MPU-6050) modülleri eklendiğinde sunucudan gelen konum ve ~5 m yer değiştirme verisi bu alanı otomatik günceller.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="control-header">
         <span class="control-title">Apple Bul Kısayolu</span>
         <span class="muted-note">iPhone 16</span>
       </div>
@@ -476,7 +531,10 @@
       endTime: "xmax_guard_night_end",
       lastAction: "xmax_guard_last_action",
       prevNightActive: "xmax_guard_prev_night_active",
-      notifLogs: "xmax_guard_notif_logs"
+      notifLogs: "xmax_guard_notif_logs",
+      motionAlert: "xmax_guard_motion_alert",
+      movedMeters: "xmax_guard_moved_meters",
+      gpsCoords: "xmax_guard_gps_coords"
     };
 
     const headerModeBadge = document.getElementById("headerModeBadge");
@@ -497,6 +555,12 @@
     const saveScheduleBtn = document.getElementById("saveScheduleBtn");
     const scheduleFeedback = document.getElementById("scheduleFeedback");
 
+    const telemetryStatusBadge = document.getElementById("telemetryStatusBadge");
+    const movedDistanceText = document.getElementById("movedDistanceText");
+    const gpsCoordsText = document.getElementById("gpsCoordsText");
+    const simulateMoveBtn = document.getElementById("simulateMoveBtn");
+    const resetMoveAlertBtn = document.getElementById("resetMoveAlertBtn");
+
     const openFindMyBtn = document.getElementById("openFindMyBtn");
     const notifPermStatus = document.getElementById("notifPermStatus");
     const enableNotifBtn = document.getElementById("enableNotifBtn");
@@ -508,6 +572,9 @@
     let endTime = localStorage.getItem(KEYS.endTime) || "08:00";
     let lastAction = localStorage.getItem(KEYS.lastAction) || "--:--";
     let notifLogs = JSON.parse(localStorage.getItem(KEYS.notifLogs) || "[]");
+    let motionAlert = localStorage.getItem(KEYS.motionAlert) === "true";
+    let movedMeters = Number(localStorage.getItem(KEYS.movedMeters) || "0");
+    let gpsCoords = localStorage.getItem(KEYS.gpsCoords) || "Bekleniyor";
 
     startTimeInput.value = startTime;
     endTimeInput.value = endTime;
@@ -624,7 +691,19 @@
       nightBoxTitle.textContent = `GECE MODU (${startTime}–${endTime})`;
       lastActionTime.textContent = `Son işlem: ${lastAction}`;
 
-      if (effectiveArmed) {
+      statusCard.classList.remove("armed", "alert");
+      liveBadge.classList.remove("armed", "alert");
+      headerModeBadge.classList.remove("active", "alert");
+
+      if (motionAlert) {
+        headerModeBadge.textContent = "HAREKET!";
+        headerModeBadge.classList.add("alert");
+        statusCard.classList.add("alert");
+        liveBadge.classList.add("alert");
+        liveBadgeText.textContent = "HAREKET ALGILANDI";
+        securityStatusText.textContent = `Motosiklet ~${movedMeters.toFixed(1)} m Hareket Etti!`;
+        securityStatusDesc.textContent = "Sensör/GPS verisine göre Yamaha XMAX 250 güvenlik sınırında yer değişikliği tespit edildi.";
+      } else if (effectiveArmed) {
         headerModeBadge.textContent = "AKTİF";
         headerModeBadge.classList.add("active");
         statusCard.classList.add("armed");
@@ -636,9 +715,6 @@
           : "Güvenlik sistemi aktif. Yamaha XMAX 250 güvenlik durumu takip ediliyor.";
       } else {
         headerModeBadge.textContent = "PASİF";
-        headerModeBadge.classList.remove("active");
-        statusCard.classList.remove("armed");
-        liveBadge.classList.remove("armed");
         liveBadgeText.textContent = "DEVRE DIŞI";
         securityStatusText.textContent = "Güvenlik Modu Kapalı";
         securityStatusDesc.textContent = "Motosiklet şu an koruma modunda değil. Manuel kontrol veya gece modu ile korumayı aktif edebilirsin.";
@@ -653,6 +729,11 @@
       nightIndicator.classList.toggle("night", nightStatus.active);
       toggleNightBtn.classList.toggle("night-active", nightStatus.active);
       toggleNightBtn.textContent = nightStatus.active ? "Gece Modunu Manuel Kapat" : "Gece Modunu Manuel Aç";
+
+      movedDistanceText.textContent = `${movedMeters.toFixed(1)} m`;
+      movedDistanceText.classList.toggle("alert", motionAlert);
+      gpsCoordsText.textContent = gpsCoords;
+      telemetryStatusBadge.textContent = motionAlert ? "Donanım: UYARI" : "Donanım: Beklemede";
 
       updatePermissionBadge();
     }
@@ -704,6 +785,34 @@
 
       scheduleFeedback.textContent = `Saat aralığı (${startTime} – ${endTime}) kaydedildi.`;
       renderUI();
+    });
+
+    simulateMoveBtn.addEventListener("click", () => {
+      motionAlert = true;
+      movedMeters = 5.4;
+      gpsCoords = "41.0082, 28.9784 (Test)";
+      lastAction = formatNow();
+
+      localStorage.setItem(KEYS.motionAlert, "true");
+      localStorage.setItem(KEYS.movedMeters, String(movedMeters));
+      localStorage.setItem(KEYS.gpsCoords, gpsCoords);
+      localStorage.setItem(KEYS.lastAction, lastAction);
+
+      renderUI();
+      sendGuardNotification("XMAX GUARD • HAREKET UYARISI", "Motosiklet yaklaşık 5.4 metre hareket etti! Son konum: 41.0082, 28.9784.");
+    });
+
+    resetMoveAlertBtn.addEventListener("click", () => {
+      motionAlert = false;
+      movedMeters = 0;
+      lastAction = formatNow();
+
+      localStorage.setItem(KEYS.motionAlert, "false");
+      localStorage.setItem(KEYS.movedMeters, "0");
+      localStorage.setItem(KEYS.lastAction, lastAction);
+
+      renderUI();
+      sendGuardNotification("XMAX GUARD • Uyarı Sıfırlandı", "Hareket uyarısı normale döndürüldü.");
     });
 
     openFindMyBtn.addEventListener("click", () => {
