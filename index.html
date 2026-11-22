@@ -14,10 +14,9 @@
       --text-main: #f3f6fa;
       --text-muted: #9aa5b8;
       --accent-blue: #2563eb;
-      --accent-blue-hover: #1d4ed8;
       --accent-blue-glow: rgba(37, 99, 235, 0.32);
       --status-safe: #10b981;
-      --status-danger: #ef4444;
+      --status-night: #38bdf8;
     }
 
     * {
@@ -34,7 +33,7 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 20px 16px 36px;
+      padding: 20px 16px 40px;
     }
 
     .app-container {
@@ -45,7 +44,6 @@
       gap: 16px;
     }
 
-    /* Üst Başlık ve Logo Alanı */
     .header {
       background: linear-gradient(145deg, var(--bg-anthracite), var(--bg-black));
       border: 1px solid var(--border-gray);
@@ -104,27 +102,27 @@
       box-shadow: 0 0 14px var(--accent-blue-glow);
     }
 
-    /* Güvenlik Durum Kartı */
-    .status-card {
+    .card {
       background: var(--bg-anthracite);
       border: 1px solid var(--border-gray);
       border-radius: 24px;
-      padding: 24px 20px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 14px;
       transition: border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
-    .status-card.armed {
+    .card.armed {
       border-color: rgba(37, 99, 235, 0.65);
       box-shadow: 0 8px 28px rgba(37, 99, 235, 0.14);
     }
 
-    .status-top {
+    .status-top, .control-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
     }
 
     .status-label {
@@ -164,7 +162,7 @@
     }
 
     .status-main {
-      font-size: 24px;
+      font-size: 23px;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -179,7 +177,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: 4px;
     }
 
     .info-box {
@@ -205,21 +202,8 @@
       color: #60a5fa;
     }
 
-    /* Manuel Kontrol Kartı */
-    .control-card {
-      background: var(--bg-anthracite);
-      border: 1px solid var(--border-gray);
-      border-radius: 24px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .control-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .info-box-value.night {
+      color: var(--status-night);
     }
 
     .control-title {
@@ -227,38 +211,88 @@
       font-weight: 700;
     }
 
-    .last-action {
+    .muted-note {
       font-size: 12px;
       color: var(--text-muted);
     }
 
-    .guard-btn {
+    .btn-primary, .btn-secondary {
       width: 100%;
       border: none;
       border-radius: 16px;
-      padding: 16px 20px;
-      font-size: 16px;
+      padding: 15px 18px;
+      font-size: 15px;
       font-weight: 700;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: transform 0.12s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+      transition: transform 0.12s ease, opacity 0.2s ease;
+    }
+
+    .btn-primary:active, .btn-secondary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
       background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
       color: #ffffff;
       box-shadow: 0 6px 20px var(--accent-blue-glow);
     }
 
-    .guard-btn:active {
-      transform: scale(0.98);
-    }
-
-    .guard-btn.armed {
+    .btn-primary.armed {
       background: var(--bg-dark-gray);
       color: #f87171;
       border: 1px solid rgba(239, 68, 68, 0.45);
       box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-dark-gray);
+      color: var(--text-main);
+      border: 1px solid var(--border-gray);
+    }
+
+    .btn-secondary.night-active {
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--status-night);
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .time-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: var(--bg-dark-gray);
+      border: 1px solid var(--border-gray);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .time-field label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .time-field input[type="time"] {
+      background: var(--bg-black);
+      color: var(--text-main);
+      border: 1px solid var(--border-gray);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 15px;
+      font-weight: 700;
+      width: 100%;
+    }
+
+    .feedback-text {
+      font-size: 12px;
+      color: var(--status-safe);
+      min-height: 16px;
     }
   </style>
 </head>
@@ -279,14 +313,14 @@
       <div id="headerModeBadge" class="mode-pill">PASİF</div>
     </header>
 
-    <section id="statusCard" class="status-card">
+    <section id="statusCard" class="card">
       <div class="status-top">
         <span class="status-label">Motosiklet Güvenlik Durumu</span>
         <span id="liveBadge" class="live-badge"><span class="live-dot"></span><span id="liveBadgeText">DEVRE DIŞI</span></span>
       </div>
       <div id="securityStatusText" class="status-main">Güvenlik Modu Kapalı</div>
       <p id="securityStatusDesc" class="status-desc">
-        Motosiklet şu an koruma modunda değil. Park ettiğinde korumayı başlatmak için aşağıdaki butonu kullan.
+        Motosiklet şu an koruma modunda değil. Manuel kontrol veya gece modu ile korumayı aktif edebilirsin.
       </p>
 
       <div class="info-grid">
@@ -295,30 +329,58 @@
           <div id="securityIndicator" class="info-box-value">KAPALI</div>
         </div>
         <div class="info-box">
-          <div class="info-box-title">GECE MODU (00:00–08:00)</div>
+          <div id="nightBoxTitle" class="info-box-title">GECE MODU (00:00–08:00)</div>
           <div id="nightIndicator" class="info-box-value">BEKLEMEDE</div>
         </div>
       </div>
     </section>
 
-    <section class="control-card">
+    <section class="card">
       <div class="control-header">
         <span class="control-title">Manuel Güvenlik Kontrolü</span>
-        <span id="lastActionTime" class="last-action">Son işlem: --:--</span>
+        <span id="lastActionTime" class="muted-note">Son işlem: --:--</span>
       </div>
-      <button id="toggleGuardBtn" class="guard-btn" type="button">
-        <svg id="btnIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        <span id="btnText">Güvenlik Modunu Aç</span>
+      <button id="toggleGuardBtn" class="btn-primary" type="button">
+        Güvenlik Modunu Aç
       </button>
+    </section>
+
+    <section class="card">
+      <div class="control-header">
+        <span class="control-title">Gece Modu ve Saat Aralığı</span>
+        <span id="autoScheduleBadge" class="muted-note">Otomatik Zamanlama</span>
+      </div>
+
+      <button id="toggleNightBtn" class="btn-secondary" type="button">
+        Gece Modunu Manuel Aç
+      </button>
+
+      <div class="time-grid">
+        <div class="time-field">
+          <label for="startTimeInput">BAŞLANGIÇ SAATİ</label>
+          <input id="startTimeInput" type="time" value="00:00" />
+        </div>
+        <div class="time-field">
+          <label for="endTimeInput">BİTİŞ SAATİ</label>
+          <input id="endTimeInput" type="time" value="08:00" />
+        </div>
+      </div>
+
+      <button id="saveScheduleBtn" class="btn-secondary" type="button">
+        Saat Aralığını Kaydet
+      </button>
+      <div id="scheduleFeedback" class="feedback-text"></div>
     </section>
   </main>
 
   <script>
-    const STORAGE_KEY = "xmax_guard_manual_armed";
-    const TIME_KEY = "xmax_guard_last_action";
+    const KEYS = {
+      manualArmed: "xmax_guard_manual_armed",
+      nightManual: "xmax_guard_night_manual",
+      startTime: "xmax_guard_night_start",
+      endTime: "xmax_guard_night_end",
+      lastAction: "xmax_guard_last_action"
+    };
 
     const headerModeBadge = document.getElementById("headerModeBadge");
     const statusCard = document.getElementById("statusCard");
@@ -327,35 +389,82 @@
     const securityStatusText = document.getElementById("securityStatusText");
     const securityStatusDesc = document.getElementById("securityStatusDesc");
     const securityIndicator = document.getElementById("securityIndicator");
+    const nightBoxTitle = document.getElementById("nightBoxTitle");
+    const nightIndicator = document.getElementById("nightIndicator");
     const lastActionTime = document.getElementById("lastActionTime");
+
     const toggleGuardBtn = document.getElementById("toggleGuardBtn");
-    const btnText = document.getElementById("btnText");
+    const toggleNightBtn = document.getElementById("toggleNightBtn");
+    const startTimeInput = document.getElementById("startTimeInput");
+    const endTimeInput = document.getElementById("endTimeInput");
+    const saveScheduleBtn = document.getElementById("saveScheduleBtn");
+    const scheduleFeedback = document.getElementById("scheduleFeedback");
 
-    let isArmed = localStorage.getItem(STORAGE_KEY) === "true";
-    let savedTime = localStorage.getItem(TIME_KEY) || "--:--";
+    let manualArmed = localStorage.getItem(KEYS.manualArmed) === "true";
+    let nightManualOverride = localStorage.getItem(KEYS.nightManual); // "true", "false" veya null
+    let startTime = localStorage.getItem(KEYS.startTime) || "00:00";
+    let endTime = localStorage.getItem(KEYS.endTime) || "08:00";
+    let lastAction = localStorage.getItem(KEYS.lastAction) || "--:--";
 
-    function formatCurrentTime() {
+    startTimeInput.value = startTime;
+    endTimeInput.value = endTime;
+
+    function timeToMinutes(hhmm) {
+      const [h, m] = hhmm.split(":").map(Number);
+      return (h * 60) + m;
+    }
+
+    function isWithinSchedule(nowMinutes, startStr, endStr) {
+      const startMin = timeToMinutes(startStr);
+      const endMin = timeToMinutes(endStr);
+
+      if (startMin === endMin) {
+        return false;
+      }
+      if (startMin < endMin) {
+        return nowMinutes >= startMin && nowMinutes < endMin;
+      }
+      // Gece yarısını geçen aralık (örnek: 23:00 - 07:00)
+      return nowMinutes >= startMin || nowMinutes < endMin;
+    }
+
+    function getNightModeStatus() {
       const now = new Date();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      return `${hours}:${minutes}`;
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const scheduledActive = isWithinSchedule(nowMinutes, startTime, endTime);
+
+      if (nightManualOverride === "true") {
+        return { active: true, source: "MANUEL AÇIK" };
+      }
+      if (nightManualOverride === "false") {
+        return { active: false, source: "MANUEL KAPALI" };
+      }
+      return { active: scheduledActive, source: scheduledActive ? "OTOMATİK AKTİF" : "BEKLEMEDE" };
+    }
+
+    function formatNow() {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     }
 
     function renderUI() {
-      lastActionTime.textContent = `Son işlem: ${savedTime}`;
+      const nightStatus = getNightModeStatus();
+      const effectiveArmed = manualArmed || nightStatus.active;
 
-      if (isArmed) {
+      nightBoxTitle.textContent = `GECE MODU (${startTime}–${endTime})`;
+      lastActionTime.textContent = `Son işlem: ${lastAction}`;
+
+      // Üst rozet ve durum kartı
+      if (effectiveArmed) {
         headerModeBadge.textContent = "AKTİF";
         headerModeBadge.classList.add("active");
         statusCard.classList.add("armed");
         liveBadge.classList.add("armed");
         liveBadgeText.textContent = "KORUMA AKTİF";
         securityStatusText.textContent = "Motosiklet Koruma Altında";
-        securityStatusDesc.textContent = "Manuel güvenlik modu devrede. Yamaha XMAX 250 izleme ve güvenlik durumu aktif olarak takip ediliyor.";
-        securityIndicator.textContent = "AÇIK";
-        securityIndicator.classList.add("blue");
-        toggleGuardBtn.classList.add("armed");
-        btnText.textContent = "Güvenlik Modunu Kapat";
+        securityStatusDesc.textContent = nightStatus.active && !manualArmed
+          ? `Gece güvenlik modu (${startTime}–${endTime}) aktif. Yamaha XMAX 250 gece koruması devrede.`
+          : "Güvenlik sistemi aktif. Yamaha XMAX 250 güvenlik durumu takip ediliyor.";
       } else {
         headerModeBadge.textContent = "PASİF";
         headerModeBadge.classList.remove("active");
@@ -363,22 +472,62 @@
         liveBadge.classList.remove("armed");
         liveBadgeText.textContent = "DEVRE DIŞI";
         securityStatusText.textContent = "Güvenlik Modu Kapalı";
-        securityStatusDesc.textContent = "Motosiklet şu an koruma modunda değil. Park ettiğinde korumayı başlatmak için aşağıdaki butonu kullan.";
-        securityIndicator.textContent = "KAPALI";
-        securityIndicator.classList.remove("blue");
-        toggleGuardBtn.classList.remove("armed");
-        btnText.textContent = "Güvenlik Modunu Aç";
+        securityStatusDesc.textContent = "Motosiklet şu an koruma modunda değil. Manuel kontrol veya gece modu ile korumayı aktif edebilirsin.";
       }
+
+      // Manuel güvenlik butonu ve kutusu
+      securityIndicator.textContent = manualArmed ? "AÇIK" : "KAPALI";
+      securityIndicator.classList.toggle("blue", manualArmed);
+      toggleGuardBtn.classList.toggle("armed", manualArmed);
+      toggleGuardBtn.textContent = manualArmed ? "Güvenlik Modunu Kapat" : "Güvenlik Modunu Aç";
+
+      // Gece modu göstergesi ve butonu
+      nightIndicator.textContent = nightStatus.active ? `AÇIK (${nightStatus.source})` : `KAPALI (${nightStatus.source})`;
+      nightIndicator.classList.toggle("night", nightStatus.active);
+      toggleNightBtn.classList.toggle("night-active", nightStatus.active);
+      toggleNightBtn.textContent = nightStatus.active ? "Gece Modunu Manuel Kapat" : "Gece Modunu Manuel Aç";
     }
 
     toggleGuardBtn.addEventListener("click", () => {
-      isArmed = !isArmed;
-      savedTime = formatCurrentTime();
-      localStorage.setItem(STORAGE_KEY, String(isArmed));
-      localStorage.setItem(TIME_KEY, savedTime);
+      manualArmed = !manualArmed;
+      lastAction = formatNow();
+      localStorage.setItem(KEYS.manualArmed, String(manualArmed));
+      localStorage.setItem(KEYS.lastAction, lastAction);
       renderUI();
     });
 
+    toggleNightBtn.addEventListener("click", () => {
+      const current = getNightModeStatus().active;
+      nightManualOverride = current ? "false" : "true";
+      lastAction = formatNow();
+      localStorage.setItem(KEYS.nightManual, nightManualOverride);
+      localStorage.setItem(KEYS.lastAction, lastAction);
+      scheduleFeedback.textContent = "Manuel gece modu tercihi kaydedildi.";
+      renderUI();
+    });
+
+    saveScheduleBtn.addEventListener("click", () => {
+      if (!startTimeInput.value || !endTimeInput.value) {
+        scheduleFeedback.textContent = "Lütfen geçerli başlangıç ve bitiş saati seç.";
+        return;
+      }
+      startTime = startTimeInput.value;
+      endTime = endTimeInput.value;
+      // Saat aralığı güncellendiğinde otomatik saat kontrolünün devreye girmesi için manuel geçersiz kılmayı sıfırla
+      nightManualOverride = null;
+      lastAction = formatNow();
+
+      localStorage.setItem(KEYS.startTime, startTime);
+      localStorage.setItem(KEYS.endTime, endTime);
+      localStorage.removeItem(KEYS.nightManual);
+      localStorage.setItem(KEYS.lastAction, lastAction);
+
+      scheduleFeedback.textContent = `Saat aralığı (${startTime} – ${endTime}) kaydedildi.`;
+      renderUI();
+    });
+
+    // Her 30 saniyede bir saati kontrol ederek otomatik gece modunu güncelle
+    setInterval(renderUI, 30000);
     renderUI();
   </script>
 </body>
