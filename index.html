@@ -17,6 +17,7 @@
       --accent-blue-glow: rgba(37, 99, 235, 0.32);
       --status-safe: #10b981;
       --status-night: #38bdf8;
+      --status-warn: #f59e0b;
     }
 
     * {
@@ -294,6 +295,44 @@
       color: var(--status-safe);
       min-height: 16px;
     }
+
+    .notif-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 190px;
+      overflow-y: auto;
+    }
+
+    .notif-item {
+      background: var(--bg-dark-gray);
+      border: 1px solid var(--border-gray);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .notif-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    .notif-time {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .notif-msg {
+      font-size: 13px;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -348,7 +387,7 @@
     <section class="card">
       <div class="control-header">
         <span class="control-title">Gece Modu ve Saat Aralığı</span>
-        <span id="autoScheduleBadge" class="muted-note">Otomatik Zamanlama</span>
+        <span class="muted-note">Otomatik Zamanlama</span>
       </div>
 
       <button id="toggleNightBtn" class="btn-secondary" type="button">
@@ -371,6 +410,27 @@
       </button>
       <div id="scheduleFeedback" class="feedback-text"></div>
     </section>
+
+    <section class="card">
+      <div class="control-header">
+        <span class="control-title">Bildirim Altyapısı</span>
+        <span id="notifPermStatus" class="muted-note">İzin: Kontrol ediliyor</span>
+      </div>
+
+      <button id="enableNotifBtn" class="btn-secondary" type="button">
+        Bildirim İzni İste / Test Et
+      </button>
+
+      <div id="notifList" class="notif-list">
+        <div class="notif-item">
+          <div class="notif-top">
+            <span>SİSTEM</span>
+            <span class="notif-time">--:--</span>
+          </div>
+          <div class="notif-msg">Bildirim altyapısı hazır. Durum değişiklikleri burada listelenir.</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -379,7 +439,9 @@
       nightManual: "xmax_guard_night_manual",
       startTime: "xmax_guard_night_start",
       endTime: "xmax_guard_night_end",
-      lastAction: "xmax_guard_last_action"
+      lastAction: "xmax_guard_last_action",
+      prevNightActive: "xmax_guard_prev_night_active",
+      notifLogs: "xmax_guard_notif_logs"
     };
 
     const headerModeBadge = document.getElementById("headerModeBadge");
@@ -400,14 +462,24 @@
     const saveScheduleBtn = document.getElementById("saveScheduleBtn");
     const scheduleFeedback = document.getElementById("scheduleFeedback");
 
+    const notifPermStatus = document.getElementById("notifPermStatus");
+    const enableNotifBtn = document.getElementById("enableNotifBtn");
+    const notifList = document.getElementById("notifList");
+
     let manualArmed = localStorage.getItem(KEYS.manualArmed) === "true";
-    let nightManualOverride = localStorage.getItem(KEYS.nightManual); // "true", "false" veya null
+    let nightManualOverride = localStorage.getItem(KEYS.nightManual);
     let startTime = localStorage.getItem(KEYS.startTime) || "00:00";
     let endTime = localStorage.getItem(KEYS.endTime) || "08:00";
     let lastAction = localStorage.getItem(KEYS.lastAction) || "--:--";
+    let notifLogs = JSON.parse(localStorage.getItem(KEYS.notifLogs) || "[]");
 
     startTimeInput.value = startTime;
     endTimeInput.value = endTime;
+
+    function formatNow() {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    }
 
     function timeToMinutes(hhmm) {
       const [h, m] = hhmm.split(":").map(Number);
@@ -417,14 +489,8 @@
     function isWithinSchedule(nowMinutes, startStr, endStr) {
       const startMin = timeToMinutes(startStr);
       const endMin = timeToMinutes(endStr);
-
-      if (startMin === endMin) {
-        return false;
-      }
-      if (startMin < endMin) {
-        return nowMinutes >= startMin && nowMinutes < endMin;
-      }
-      // Gece yarısını geçen aralık (örnek: 23:00 - 07:00)
+      if (startMin === endMin) return false;
+      if (startMin < endMin) return nowMinutes >= startMin && nowMinutes < endMin;
       return nowMinutes >= startMin || nowMinutes < endMin;
     }
 
@@ -442,19 +508,86 @@
       return { active: scheduledActive, source: scheduledActive ? "OTOMATİK AKTİF" : "BEKLEMEDE" };
     }
 
-    function formatNow() {
-      const now = new Date();
-      return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    function updatePermissionBadge() {
+      if (!("Notification" in window)) {
+        notifPermStatus.textContent = "İzin: Desteklenmiyor";
+        return;
+      }
+      if (Notification.permission === "granted") {
+        notifPermStatus.textContent = "İzin: Verildi";
+      } else if (Notification.permission === "denied") {
+        notifPermStatus.textContent = "İzin: Reddedildi";
+      } else {
+        notifPermStatus.textContent = "İzin: Bekleniyor";
+      }
+    }
+
+    function renderNotifLogs() {
+      if (notifLogs.length === 0) {
+        notifList.innerHTML = `
+          <div class="notif-item">
+            <div class="notif-top">
+              <span>SİSTEM</span>
+              <span class="notif-time">${formatNow()}</span>
+            </div>
+            <div class="notif-msg">Henüz bildirim kaydı yok. Güvenlik veya gece modu değiştiğinde burada görünür.</div>
+          </div>
+        `;
+        return;
+      }
+
+      notifList.innerHTML = notifLogs.map(item => `
+        <div class="notif-item">
+          <div class="notif-top">
+            <span>${item.title}</span>
+            <span class="notif-time">${item.time}</span>
+          </div>
+          <div class="notif-msg">${item.message}</div>
+        </div>
+      `).join("");
+    }
+
+    function sendGuardNotification(title, message) {
+      const timeStr = formatNow();
+      notifLogs.unshift({ title, message, time: timeStr });
+      notifLogs = notifLogs.slice(0, 15);
+      localStorage.setItem(KEYS.notifLogs, JSON.stringify(notifLogs));
+      renderNotifLogs();
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        try {
+          new Notification(title, { body: message });
+        } catch (err) {
+          // iOS Safari bazı PWA durumlarında servis çalışanı üzerinden bildirim bekleyebilir; log kaydı korunur.
+        }
+      }
+    }
+
+    function checkNightTransition(currentNightActive) {
+      const prevSaved = localStorage.getItem(KEYS.prevNightActive);
+      if (prevSaved === null) {
+        localStorage.setItem(KEYS.prevNightActive, String(currentNightActive));
+        return;
+      }
+      const prevNightActive = prevSaved === "true";
+      if (prevNightActive !== currentNightActive) {
+        localStorage.setItem(KEYS.prevNightActive, String(currentNightActive));
+        if (currentNightActive) {
+          sendGuardNotification("XMAX GUARD • Gece Modu Başladı", `Gece güvenlik modu (${startTime}–${endTime}) aktif hale geldi.`);
+        } else {
+          sendGuardNotification("XMAX GUARD • Gece Modu Sona Erdi", `Gece güvenlik modu (${startTime}–${endTime}) sona erdi.`);
+        }
+      }
     }
 
     function renderUI() {
       const nightStatus = getNightModeStatus();
-      const effectiveArmed = manualArmed || nightStatus.active;
+      checkNightTransition(nightStatus.active);
 
+      const effectiveArmed = manualArmed || nightStatus.active;
       nightBoxTitle.textContent = `GECE MODU (${startTime}–${endTime})`;
       lastActionTime.textContent = `Son işlem: ${lastAction}`;
 
-      // Üst rozet ve durum kartı
       if (effectiveArmed) {
         headerModeBadge.textContent = "AKTİF";
         headerModeBadge.classList.add("active");
@@ -475,17 +608,17 @@
         securityStatusDesc.textContent = "Motosiklet şu an koruma modunda değil. Manuel kontrol veya gece modu ile korumayı aktif edebilirsin.";
       }
 
-      // Manuel güvenlik butonu ve kutusu
       securityIndicator.textContent = manualArmed ? "AÇIK" : "KAPALI";
       securityIndicator.classList.toggle("blue", manualArmed);
       toggleGuardBtn.classList.toggle("armed", manualArmed);
       toggleGuardBtn.textContent = manualArmed ? "Güvenlik Modunu Kapat" : "Güvenlik Modunu Aç";
 
-      // Gece modu göstergesi ve butonu
       nightIndicator.textContent = nightStatus.active ? `AÇIK (${nightStatus.source})` : `KAPALI (${nightStatus.source})`;
       nightIndicator.classList.toggle("night", nightStatus.active);
       toggleNightBtn.classList.toggle("night-active", nightStatus.active);
       toggleNightBtn.textContent = nightStatus.active ? "Gece Modunu Manuel Kapat" : "Gece Modunu Manuel Aç";
+
+      updatePermissionBadge();
     }
 
     toggleGuardBtn.addEventListener("click", () => {
@@ -494,6 +627,12 @@
       localStorage.setItem(KEYS.manualArmed, String(manualArmed));
       localStorage.setItem(KEYS.lastAction, lastAction);
       renderUI();
+
+      if (manualArmed) {
+        sendGuardNotification("XMAX GUARD • Güvenlik Açıldı", "Yamaha XMAX 250 manuel güvenlik modu aktif edildi.");
+      } else {
+        sendGuardNotification("XMAX GUARD • Güvenlik Kapatıldı", "Manuel güvenlik modu devre dışı bırakıldı.");
+      }
     });
 
     toggleNightBtn.addEventListener("click", () => {
@@ -504,6 +643,12 @@
       localStorage.setItem(KEYS.lastAction, lastAction);
       scheduleFeedback.textContent = "Manuel gece modu tercihi kaydedildi.";
       renderUI();
+
+      if (!current) {
+        sendGuardNotification("XMAX GUARD • Gece Modu Açıldı", "Gece güvenlik modu manuel olarak aktif edildi.");
+      } else {
+        sendGuardNotification("XMAX GUARD • Gece Modu Kapatıldı", "Gece güvenlik modu manuel olarak kapatıldı.");
+      }
     });
 
     saveScheduleBtn.addEventListener("click", () => {
@@ -513,7 +658,6 @@
       }
       startTime = startTimeInput.value;
       endTime = endTimeInput.value;
-      // Saat aralığı güncellendiğinde otomatik saat kontrolünün devreye girmesi için manuel geçersiz kılmayı sıfırla
       nightManualOverride = null;
       lastAction = formatNow();
 
@@ -526,7 +670,26 @@
       renderUI();
     });
 
-    // Her 30 saniyede bir saati kontrol ederek otomatik gece modunu güncelle
+    enableNotifBtn.addEventListener("click", async () => {
+      if (!("Notification" in window)) {
+        sendGuardNotification("XMAX GUARD • Bildirim Testi", "Tarayıcı bildirimi desteklenmiyor; uygulama içi kayıt çalışıyor.");
+        return;
+      }
+
+      if (Notification.permission === "default") {
+        const result = await Notification.requestPermission();
+        updatePermissionBadge();
+        if (result === "granted") {
+          sendGuardNotification("XMAX GUARD • Bildirimler Aktif", "Bildirim izni verildi. Güvenlik uyarıları hazır.");
+        } else {
+          sendGuardNotification("XMAX GUARD • İzin Verilmedi", "Tarayıcı bildirim izni verilmedi, kayıtlar panelde tutuluyor.");
+        }
+      } else {
+        sendGuardNotification("XMAX GUARD • Test Bildirimi", "Bildirim altyapısı sorunsuz çalışıyor.");
+      }
+    });
+
+    renderNotifLogs();
     setInterval(renderUI, 30000);
     renderUI();
   </script>
