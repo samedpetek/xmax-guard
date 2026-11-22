@@ -17,7 +17,6 @@
       --accent-blue-glow: rgba(37, 99, 235, 0.32);
       --status-safe: #10b981;
       --status-night: #38bdf8;
-      --status-warn: #f59e0b;
     }
 
     * {
@@ -217,7 +216,7 @@
       color: var(--text-muted);
     }
 
-    .btn-primary, .btn-secondary {
+    .btn-primary, .btn-secondary, .btn-findmy {
       width: 100%;
       border: none;
       border-radius: 16px;
@@ -225,10 +224,15 @@
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       transition: transform 0.12s ease, opacity 0.2s ease;
     }
 
-    .btn-primary:active, .btn-secondary:active {
+    .btn-primary:active, .btn-secondary:active, .btn-findmy:active {
       transform: scale(0.98);
     }
 
@@ -255,6 +259,12 @@
       background: rgba(56, 189, 248, 0.14);
       color: var(--status-night);
       border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    .btn-findmy {
+      background: #172554;
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.45);
     }
 
     .time-grid {
@@ -332,6 +342,16 @@
       font-size: 13px;
       color: var(--text-main);
       line-height: 1.4;
+    }
+
+    .disclaimer-box {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px dashed var(--border-gray);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-muted);
     }
   </style>
 </head>
@@ -413,6 +433,21 @@
 
     <section class="card">
       <div class="control-header">
+        <span class="control-title">Apple Bul Kısayolu</span>
+        <span class="muted-note">iPhone 16</span>
+      </div>
+
+      <a id="openFindMyBtn" class="btn-findmy" href="findmy://">
+        Apple Bul Uygulamasını Aç
+      </a>
+
+      <div class="disclaimer-box">
+        Not: Bu buton iPhone'daki Apple Bul (Find My) uygulamasını açmaya yönlendirir. Apple güvenlik kısıtlamaları nedeniyle AirTag konumuna bu uygulama içinden doğrudan veri çekilmez.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="control-header">
         <span class="control-title">Bildirim Altyapısı</span>
         <span id="notifPermStatus" class="muted-note">İzin: Kontrol ediliyor</span>
       </div>
@@ -462,6 +497,7 @@
     const saveScheduleBtn = document.getElementById("saveScheduleBtn");
     const scheduleFeedback = document.getElementById("scheduleFeedback");
 
+    const openFindMyBtn = document.getElementById("openFindMyBtn");
     const notifPermStatus = document.getElementById("notifPermStatus");
     const enableNotifBtn = document.getElementById("enableNotifBtn");
     const notifList = document.getElementById("notifList");
@@ -558,7 +594,7 @@
         try {
           new Notification(title, { body: message });
         } catch (err) {
-          // iOS Safari bazı PWA durumlarında servis çalışanı üzerinden bildirim bekleyebilir; log kaydı korunur.
+          // Log kaydı korunur.
         }
       }
     }
@@ -668,6 +704,10 @@
 
       scheduleFeedback.textContent = `Saat aralığı (${startTime} – ${endTime}) kaydedildi.`;
       renderUI();
+    });
+
+    openFindMyBtn.addEventListener("click", () => {
+      sendGuardNotification("XMAX GUARD • Apple Bul", "Apple Bul uygulaması başlatılıyor.");
     });
 
     enableNotifBtn.addEventListener("click", async () => {
